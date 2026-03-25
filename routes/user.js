@@ -4,13 +4,15 @@ const { User } = require('../db');
 const { Course } = require('../db');
 const router = Router();
 const courseMiddleware = require('../middleware/course.js');
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
 //admin routes
 
-router.post('/signup', async (req, res) => {
+router.post('/sign-up', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
-
+    const token = jwt.sign({ username: username }, process.env.JWT_SECRET);
     const user = await User.findOne({
         username: username,
         password: password
@@ -18,21 +20,22 @@ router.post('/signup', async (req, res) => {
 
     if (user) {
         return res.status(403).send({
-            msg: "User already in system"
+            msg: "User already in system. You need to sign in!",
         })
     } else {
         await User.create({
             username: username,
-            password: password
+            password: password,
+            token:token
         });
-
         res.json({
-            msg: "User created successfully"
+            msg: "User created successfully",
+            token: token
 
         })
     }
-
 })
+
 
 router.get('/courses', userMiddleware, async (req, res) => {
     const all = await Course.find({});
@@ -60,13 +63,20 @@ router.post('/courses/:courseID', userMiddleware, courseMiddleware, async (req, 
 router.get('/purchasedcourses', userMiddleware, async (req, res) => {
     const user = await User.findById(req.userId);
     const purchaseArray = [];
-    for (let i=0;i<user.purchasedCourses.length;i++){
+    for (let i = 0; i < user.purchasedCourses.length; i++) {
         let courseTitle = await Course.findById(user.purchasedCourses[i]);
-        purchaseArray.push([user.purchasedCourses[i] , courseTitle.title])
+        purchaseArray.push([user.purchasedCourses[i], courseTitle.title])
     }
     res.json({
         purchasedCourses: purchaseArray
     });
+})
+
+router.post('/sign-in', userMiddleware, async (req, res) => {
+    res.json({
+        msg: `Welcome! ${req.user.username} Have a great day ahead`
+    })
+
 })
 
 module.exports = router;
