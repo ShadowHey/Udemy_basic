@@ -2,6 +2,7 @@ const { Router } = require('express');
 const adminMiddleware = require('../middleware/admin.js');
 const { Admin } = require('../db');
 const { Course } = require('../db');
+const { User } = require('../db');
 const router = Router();
 
 //admin routes
@@ -63,5 +64,20 @@ router.get('/courses' ,adminMiddleware, async (req,res)=>{
         Courses: all
     });
 })
+
+router.get('/useralldata', async (req, res) => {
+    try {
+        const users = await User.find(); // fetch all users
+
+        res.json({
+            users
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Error fetching users",
+            error: err.message
+        });
+    }
+});
 
 module.exports = router;
