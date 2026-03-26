@@ -1,17 +1,19 @@
-
+require('dotenv').config();
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://admin:password@localhost:27017');
+mongoose.connect(process.env.MONGO_CONNECT_KEY);
 
 //define schemes
 const AdminSchema = new mongoose.Schema({
     username: String,
-    password: String
+    password: String,
+    token: String
 });
 
 const UserSchema = new mongoose.Schema({
     username: String,
     password: String,
+    token: String,
     purchasedCourses: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
